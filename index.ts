@@ -5,7 +5,7 @@ type Tabuleiro = ('' | 'x' | 'o')[][];
  * @param tabuleiro tabuleiro de jogo na velha nXn
  * @returns posição da jogada
  */
-const jogar = (tabuleiro: Tabuleiro) => {
+const jogar = (tabuleiro: Tabuleiro): [number, number] => {
     const tamanhoTabuleiro = tabuleiro.length;
     let quantosX = 0;
     let quantosO = 0;
@@ -34,14 +34,7 @@ const jogar = (tabuleiro: Tabuleiro) => {
         return [centro, centro];
     }
 
-    // Verifica se as quinas estão vazias, para jogar
-    for (let i = 0; i < tamanhoTabuleiro; i++) {
-        for (let j = 0; j < tamanhoTabuleiro; j++) {
-            if (tabuleiro[i][j] === '') {
-                return [i, j];
-            }
-        }
-    }
+    return melhorUltimaOpcao(tabuleiro, marcadorOponente, tamanhoTabuleiro);
 }
 
 /**
@@ -72,9 +65,10 @@ const encontrarMelhorJogada = (tabuleiro: Tabuleiro, marcador: 'x' | 'o', tamanh
  * Função que verifica se o jogador venceu
  * @param tabuleiro tabuleiro do jogo
  * @param marcador marcador do jogador
+ * @param tamanhoTabuleiro tamanho do tabuleiro (n do jogo da velha nXn)
  * @returns se o jogador venceu
  */
-const verificaVencedor = (tabuleiro: Tabuleiro, marcador: 'x' | 'o', n: number): boolean => {
+const verificaVencedor = (tabuleiro: Tabuleiro, marcador: 'x' | 'o', tamanhoTabuleiro: number): boolean => {
     let venceu = false;
 
     tabuleiro.forEach((linha, idx) => {
@@ -83,9 +77,52 @@ const verificaVencedor = (tabuleiro: Tabuleiro, marcador: 'x' | 'o', n: number):
         }
     });
 
-    if (tabuleiro.every((linha, idx) => linha[idx] === marcador) || tabuleiro.every((linha, idx) => linha[n - 1 - idx] === marcador)) {
+    if (tabuleiro.every((linha, idx) => linha[idx] === marcador) || tabuleiro.every((linha, idx) => linha[tamanhoTabuleiro - 1 - idx] === marcador)) {
         venceu = true;
     }
 
     return venceu;
+}
+
+/**
+ * Verifica as quinas que estão vazias com marcações na linha e coluna do oponente, para jogar
+ * @param tabuleiro tabuleiro do jogo
+ * @param marcadorOponente marcador do oponente
+ * @param tamanhoTabuleiro tamanho do tabuleiro (n do jogo da velha nXn)
+ * @returns melhor última opção para jogar
+ */
+const melhorUltimaOpcao = (tabuleiro: Tabuleiro, marcadorOponente: 'x' | 'o', tamanhoTabuleiro: number): [number, number] => {
+
+    let linhaCantoComOponente, colunaCantoComOponente;
+    
+    for (let i = 0; i < tamanhoTabuleiro; i++) {
+        for (let j = 0; j < tamanhoTabuleiro; j++) {
+            if ((i == 0 || i == tamanhoTabuleiro - 1) && tabuleiro[i][j] === marcadorOponente) {
+                linhaCantoComOponente = i;
+            }
+        }
+    }
+
+    for (let i = 0; i < tamanhoTabuleiro; i++) {
+        for (let j = 0; j < tamanhoTabuleiro; j++) {
+            if ((j == 0 || j == tamanhoTabuleiro - 1) && tabuleiro[i][j] === marcadorOponente) {
+                colunaCantoComOponente = j;
+            }
+        }
+    }
+    
+
+    if (linhaCantoComOponente !== undefined && colunaCantoComOponente !== undefined && tabuleiro[linhaCantoComOponente][colunaCantoComOponente] === '') {
+        return [linhaCantoComOponente, colunaCantoComOponente];
+    }
+
+    for (let i = 0; i < tamanhoTabuleiro; i++) {
+        for (let j = 0; j < tamanhoTabuleiro; j++) {
+            if (tabuleiro[i][j] === '') {
+                return [i, j];
+            }
+        }
+    }
+
+    return [0, 0];
 }
